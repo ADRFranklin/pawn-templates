@@ -83,3 +83,20 @@ Test:Assignment() {
     ASSERT(ret == 0);
     ASSERT(strcmp(rendered, "apples, oranges, peaches") == 0);
 }
+
+Test:GlobalVariables() {
+    CreateTemplateVar(
+        PAIR_FLOAT("float", 70.5)
+    );
+    new Template:t = CreateTemplate("\
+    String: {{ string }}, Int: {{ int }}, Float: {{ float }}");
+    new rendered[64];
+    new ret = RenderTemplate(t, rendered, sizeof rendered,
+        PAIR_STR("string", "Southclaws"),
+        PAIR_INT("int", 50)
+    );
+
+    printf("ret: %d rendered: '%s'", ret, rendered);
+    ASSERT(ret == 0);
+    ASSERT(strcmp(rendered, "String: Southclaws, Int: 50, Float: 70.5") == 0);
+}

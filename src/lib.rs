@@ -11,7 +11,8 @@ use samp::initialize_plugin;
 initialize_plugin!(
     natives: [
         Templates::create_template,
-        Templates::render_template
+        Templates::render_template,
+        Templates::create_template_var,
     ],
     {
         let samp_logger = samp::plugin::logger()
@@ -29,6 +30,7 @@ initialize_plugin!(
         Templates {
             pool: HashMap::new(),
             id: 0,
+            variables: liquid::value::Object::new()
         }
     }
 );

@@ -6,7 +6,8 @@ use log::{error};
 
 pub struct Templates {
     pub pool: HashMap<i32, liquid::Template>,
-    pub id: i32
+    pub id: i32,
+    pub variables: liquid::value::Object
 }
 
 #[derive(Debug)]
@@ -68,7 +69,7 @@ impl Templates {
         let output_str = params.next::<UnsizedBuffer>().unwrap();
         let output_len = params.next::<usize>().unwrap();        
 
-        let mut variables = liquid::value::Object::new();
+        let mut variables = self.variables.clone();
 
         for _ in 0..pairs {   
             let var_type = match params.next::<Ref<i32>>() {
@@ -118,6 +119,57 @@ impl Templates {
         return Ok(0);
     }
 
+    #[native(raw, name = "CreateTemplateVar")]
+    pub fn create_template_var(
+        &mut self,
+        _: &Amx,
+        mut params: samp::args::Args
+    ) -> AmxResult<i32> {
+        let arg_count = params.count();
+        let pairs = if arg_count == 0 || arg_count % 3 == 0 {
+            arg_count / 3
+        } else {
+            error!("invalid variadic argument pattern passed to CreateTemplateVar.");
+            return Ok(1);
+        };
+
+        for _ in 0..pairs { 
+            let var_type = match params.next::<Ref<i32>>() {
+                None => {
+                    error!("invalid type expected int");
+                    return Ok(-1);
+                }
+                Some(t) => t,
+            }; 
+
+            let key = match params.next::<AmxString>() {
+                None => {
+                    error!("invalid type expected string");
+                    return Ok(-1);
+                },
+                Some(k) => k.to_string(),
+            };
+
+            match ArgumentPairType::from_i32(*var_type) {
+                ArgumentPairType::String => {
+                    let value = params.next::<AmxString>().unwrap().to_string();
+                    self.variables.insert(key.into(), liquid::value::Value::scalar(value));
+                }
+                ArgumentPairType::Int => {
+                    let value = params.next::<Ref<i32>>().unwrap();
+                    self.variables.insert(key.into(), liquid::value::Value::scalar(*value));
+                }
+                ArgumentPairType::Float => {
+                    let value = params.next::<Ref<f32>>().unwrap();
+                    self.variables.insert(key.into(), liquid::value::Value::scalar(*value as f64));
+                }
+                _ => return Ok(3),         
+            };
+        }
+
+        return Ok(0);
+    }
+
     fn alloc(&mut self, template: liquid::Template) -> i32 {
         self.id += 1;
         self.pool.insert(self.id, template);
@@ -130,6 +182,7 @@ impl Default for Templates {
         Templates {
             pool: HashMap::new(),
             id: 0,
+            variables: liquid::value::Object::new()
         }
     }
 }

@@ -21,3 +21,4 @@ enum {
 
 native Template:CreateTemplate(const template[]);
 native RenderTemplate(Template:id, dest[], len, ...);
+native CreateTemplateVar(...);
