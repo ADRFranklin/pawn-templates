@@ -13,8 +13,8 @@ If you disagree, please file an appeal at: {{forum}}\
 
 new dest[1024];
 RenderTemplate(TemplateBanned, dest,
-    "name", playerName,
-    "reason", reason,
-    "forum", "https://forum.website.com"
+    PAIR_INT("name", playerName),
+    PAIR_INT("reason", reason),
+    PAIR_STR("forum", "https://forum.website.com")
 );
 ```
