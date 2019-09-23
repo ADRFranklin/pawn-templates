@@ -1,6 +1,6 @@
-## Template Engine for Pawn
+# Template Engine for Pawn
 
-# Basic Use
+## Basic Use
 ```c
 TemplateBanned = CreateTemplate(
 "Your account {{name}} has been banned!\
@@ -14,13 +14,14 @@ If you disagree, please file an appeal at: {{forum}}\
 
 new dest[1024];
 RenderTemplate(TemplateBanned, dest,
-    PAIR_INT("name", playerName),
-    PAIR_INT("reason", reason),
+    PAIR_STR("name", playerName),
+    PAIR_STR("reason", reason),
+    PAIR_INT("duration", time()),
     PAIR_STR("forum", "https://forum.website.com")
 );
 ```
 
-# Full Usage
+## Full Usage
 ```c
 static Template:JoinTemplate;
 
