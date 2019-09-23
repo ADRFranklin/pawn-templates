@@ -1,16 +1,13 @@
-use samp_sdk::amx::{AmxResult, AMX};
-use samp_sdk::args;
-use samp_sdk::consts::*;
-use samp_sdk::types::Cell;
 use std::collections::HashMap;
+use samp::prelude::*;
+use samp::{native};
+use log::{error};
+
 
 pub struct Templates {
-    pool: HashMap<Cell, liquid::Template>,
-    id: Cell,
+    pub pool: HashMap<i32, liquid::Template>,
+    pub id: i32
 }
-
-define_native!(create_template, template: String);
-define_native!(render_template as raw);
 
 #[derive(Debug)]
 enum ArgumentPairType {
@@ -32,119 +29,101 @@ impl ArgumentPairType {
 }
 
 impl Templates {
-    pub fn load(&self) -> bool {
-        return true;
-    }
-
-    pub fn unload(&self) {
-        return;
-    }
-
-    pub fn amx_load(&self, amx: &AMX) -> Cell {
-        let natives = natives! {
-            "CreateTemplate" => create_template,
-            "RenderTemplate" => render_template
-        };
-
-        match amx.register(&natives) {
-            Ok(_) => AMX_ERR_NONE,
-            Err(err) => {
-                log!("failed to register natives: {:?}", err);
-                AMX_ERR_INIT
-            }
-        }
-    }
-
-    pub fn amx_unload(&self, _: &AMX) -> Cell {
-        return AMX_ERR_NONE;
-    }
-
-    pub fn create_template(&mut self, _: &AMX, template: String) -> AmxResult<Cell> {
-        let id = self.alloc();
-
+    #[native(name = "CreateTemplate")]
+    pub fn create_template(&mut self, _: &Amx, template: AmxString) -> AmxResult<i32> {
         let parser = liquid::ParserBuilder::with_liquid().build().unwrap();
 
-        let t = match parser.parse(&template) {
+        let t = match parser.parse(&template.to_string()) {
             Ok(v) => v,
             Err(e) => {
-                log!("{}", e);
+                error!("{}", e);
                 return Ok(1);
             }
         };
-        self.pool.insert(id, t);
 
+        let id = self.alloc(t);
         return Ok(id);
     }
 
-    pub fn render_template(&mut self, amx: &AMX, params: *mut Cell) -> AmxResult<Cell> {
-        let varargc = args_count!(params) - 3;
-        let pairs = match varargc == 0 || varargc % 3 == 0 {
-            true => varargc / 3,
-            false => {
-                log!("Invalid number of arguments passed to RenderTemplate");
-                return Ok(1);
-            }
+    #[native(raw, name = "RenderTemplate")]
+    pub fn render_template(
+        &mut self, 
+        _: &Amx, 
+        mut params: samp::args::Args
+    ) -> AmxResult<i32> {
+        let arg_count = params.count() - 3;
+        let pairs = if arg_count == 0 || arg_count % 3 == 0 {
+            arg_count / 3
+        } else {
+            error!("invalid variadic argument pattern passed to RenderTemplate.");
+            return Ok(1);
         };
 
-        let mut parser = args::Parser::new(params);
-        expand_args!(@amx, parser, template_id: Cell);
-        expand_args!(@amx, parser, output_string_amx: Cell);
-        let output_string = amx.get_address(output_string_amx)?;
-        expand_args!(@amx, parser, output_length: usize);
-
+        let template_id = params.next::<i32>().unwrap();            
         let t = match self.pool.get(&template_id) {
             Some(t) => t,
             None => return Ok(2),
         };
 
+        let output_str = params.next::<UnsizedBuffer>().unwrap();
+        let output_len = params.next::<usize>().unwrap();        
+
         let mut variables = liquid::value::Object::new();
 
-        for _ in 0..pairs {
-            let mut pair_type: Cell = 0;
-            get_arg_ref(amx, &mut parser, &mut pair_type);
+        for _ in 0..pairs {   
+            let var_type = match params.next::<Ref<i32>>() {
+                None => {
+                    error!("invalid type expected int");
+                    return Ok(-1);
+                }
+                Some(t) => t,
+            };       
 
-            let mut key = String::new();
-            get_arg_string(amx, &mut parser, &mut key);
+            let key = match params.next::<AmxString>() {
+                None => {
+                    error!("invalid type expected string");
+                    return Ok(-1);
+                }
+                Some(k) => k.to_string(),
+            };
 
-            match ArgumentPairType::from_i32(pair_type) {
+            match ArgumentPairType::from_i32(*var_type) {
                 ArgumentPairType::String => {
-                    let mut val = String::new();
-                    get_arg_string(amx, &mut parser, &mut val);
-                    variables.insert(key.into(), liquid::value::Value::scalar(val));
+                    let value = params.next::<AmxString>().unwrap().to_string();
+                    variables.insert(key.into(), liquid::value::Value::scalar(value));
                 }
                 ArgumentPairType::Int => {
-                    let mut val: Cell = 0;
-                    get_arg_ref(amx, &mut parser, &mut val);
-                    variables.insert(key.into(), liquid::value::Value::scalar(val));
+                    let value = params.next::<Ref<i32>>().unwrap();
+                    variables.insert(key.into(), liquid::value::Value::scalar(*value));
                 }
                 ArgumentPairType::Float => {
-                    let mut val: f32 = 0.0;
-                    get_arg_ref(amx, &mut parser, &mut val);
-                    variables.insert(key.into(), liquid::value::Value::scalar(val as f64));
+                    let value = params.next::<Ref<f32>>().unwrap();
+                    variables.insert(key.into(), liquid::value::Value::scalar(*value as f64));
                 }
                 _ => return Ok(3),
-            };
+            }
         }
 
         let output = match t.render(&variables) {
             Ok(v) => v,
             Err(e) => {
-                log!("{}", e);
+                error!("{}", e);
                 return Ok(4);
             }
         };
 
-        let encoded = samp_sdk::cp1251::encode(&output)?;
-        set_string!(encoded, output_string, output_length);
+        let mut dest = output_str.into_sized_buffer(output_len);
+        let _ = samp::cell::string::put_in_buffer(&mut dest, &output);
 
         return Ok(0);
     }
 
-    fn alloc(&mut self) -> Cell {
+    fn alloc(&mut self, template: liquid::Template) -> i32 {
         self.id += 1;
-        return self.id;
+        self.pool.insert(self.id, template);
+        self.id
     }
-}
+} 
 
 impl Default for Templates {
     fn default() -> Self {
@@ -155,21 +134,4 @@ impl Default for Templates {
     }
 }
 
-fn get_arg_ref<T: Clone>(amx: &AMX, parser: &mut args::Parser, out_ref: &mut T) -> i32 {
-    expand_args!(@amx, parser, tmp_ref: ref T);
-    *out_ref = tmp_ref.clone();
-    return 1;
-}
-
-fn get_arg_string(amx: &AMX, parser: &mut args::Parser, out_str: &mut String) -> i32 {
-    expand_args!(@amx, parser, tmp_str: String);
-    match samp_sdk::cp1251::decode_to(&tmp_str.into_bytes(), out_str) {
-        Ok(_) => {
-            return 1;
-        }
-        Err(e) => {
-            log!("{}", e);
-            return 0;
-        }
-    }
-}
+impl SampPlugin for Templates {}

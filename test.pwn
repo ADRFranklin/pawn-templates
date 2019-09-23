@@ -1,6 +1,7 @@
 #define RUN_TESTS
 
 #include <a_samp>
+#include <YSI\y_utils>
 #include <YSI\y_testing>
 
 #include "templates.inc"

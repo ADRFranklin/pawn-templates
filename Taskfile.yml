@@ -1,0 +1,58 @@
+# https://taskfile.dev
+
+version: "2"
+
+tasks:  
+
+  prepare:
+    cmds:
+      - cd test && sampctl server ensure
+      - sampctl package ensure
+
+  toolchain-win32:
+    cmds:
+      - rustup default stable-i686-pc-windows-msvc
+
+  build-win32-release:
+    deps: [toolchain-win32]
+    cmds:
+      - cargo +stable-i686-pc-windows-msvc build --release
+      - cp target/release/pawn_templates.dll test/plugins/templates.dll
+
+  build-win32-debug:
+    deps: [toolchain-win32]
+    cmds:
+      - cargo +stable-i686-pc-windows-msvc build
+      - cp target/debug/pawn_templates.dll test/plugins/templates.dll
+
+  toolchain-linux:
+    cmds:
+      - rustup default stable-i686-unknown-linux-gnu
+
+  build-linux-release:
+    deps: [toolchain-linux]
+    cmds:
+      - cargo +stable-i686-unknown-linux-gnu build --release
+      - cp target/release/libpawn_templates.so test/plugins/templates.so
+
+  build-linux-debug:
+    deps: [toolchain-linux]
+    cmds:
+      - cargo +stable-i686-unknown-linux-gnu build
+      - cp target/debug/libpawn_templates.so test/plugins/templates.so
+
+  test-native:
+    cmds:
+      - sampctl package build
+      - cd test && sampctl server run
+    
+  test-container:
+    cmds:
+      - sampctl package build
+      - cd test && sampctl server run --container
+
+  build-container:
+    cmds:
+      - rm -rf build
+      - docker build -t southclaws/templates-build .
+      - docker run -v $(shell pwd)/test/plugins:/root/test/plugins southclaws/templates-build      

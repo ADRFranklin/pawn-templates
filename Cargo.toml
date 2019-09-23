@@ -8,8 +8,10 @@ name = "pawn_templates"
 crate-type = ["dylib"]
 
 [dependencies]
-samp-sdk = { git="https://github.com/ZOTTCE/samp-sdk" }
+samp = { version = "0.1.2", features = ["encoding"] }
 liquid = "0.18"
+log = "0.4.6"
+fern = "0.5.7"
 
 [features]
 default = ["nightly"]
