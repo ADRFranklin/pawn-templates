@@ -133,16 +133,10 @@ impl Templates {
         let key_str = key.to_string();
         if key_str.is_empty() {
             error!("key expects a string, none given.");
+            return Ok(1);
         }
 
-        let mut variable: Object = Object::new();
-        for (key, value) in self.globals.iter() {
-            if key.to_string() == namespace_str {
-                variable = value.as_object().unwrap().clone();
-                break;
-            }
-        }
-
+        let mut variable: Object = self.get_global_variables(&namespace_str);
         variable.insert(key_str.into(), Value::scalar(value));
         self.globals
             .insert(namespace_str.into(), Value::Object(variable));
@@ -167,16 +161,10 @@ impl Templates {
         let key_str = key.to_string();
         if key_str.is_empty() {
             error!("key expects a string, none given.");
+            return Ok(1);
         }
 
-        let mut variable: Object = Object::new();
-        for (key, value) in self.globals.iter() {
-            if key.to_string() == namespace_str {
-                variable = value.as_object().unwrap().clone();
-                break;
-            }
-        }
-
+        let mut variable: Object = self.get_global_variables(&namespace_str);
         variable.insert(key_str.into(), Value::scalar(value as f64));
         self.globals
             .insert(namespace_str.into(), Value::Object(variable));
@@ -201,16 +189,10 @@ impl Templates {
         let key_str = key.to_string();
         if key_str.is_empty() {
             error!("key expects a string, none given.");
+            return Ok(1);
         }
 
-        let mut variable: Object = Object::new();
-        for (key, value) in self.globals.iter() {
-            if key.to_string() == namespace_str {
-                variable = value.as_object().unwrap().clone();
-                break;
-            }
-        }
-
+        let mut variable: Object = self.get_global_variables(&namespace_str);
         variable.insert(key_str.into(), Value::scalar(value.to_string()));
         self.globals
             .insert(namespace_str.into(), Value::Object(variable));
@@ -222,6 +204,18 @@ impl Templates {
         self.id += 1;
         self.pool.insert(self.id, template);
         self.id
+    }
+
+    fn get_global_variables(&mut self, namespace: &String) -> Object {
+        let mut object = Object::new();
+        for (key, value) in self.globals.iter() {
+            if key.to_string() == *namespace {
+                object = value.as_object().unwrap().clone();
+                break;
+            }
+        }
+
+        object
     }
 }
 
