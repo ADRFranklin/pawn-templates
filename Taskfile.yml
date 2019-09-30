@@ -55,4 +55,4 @@ tasks:
     cmds:
       - rm -rf build
       - docker build -t southclaws/templates-build .
-      - docker run -v $(shell pwd)/test/plugins:/root/test/plugins southclaws/templates-build      
+      - docker run -v $(pwd)/test/plugins:/root/test/plugins southclaws/templates-build
