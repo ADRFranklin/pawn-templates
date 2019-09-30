@@ -85,18 +85,14 @@ Test:Assignment() {
 }
 
 Test:GlobalVariables() {
-    CreateTemplateVar(
-        PAIR_FLOAT("float", 70.5)
-    );
-    new Template:t = CreateTemplate("\
-    String: {{ string }}, Int: {{ int }}, Float: {{ float }}");
+    MakeTemplateVarString("player", "name", "Southclaws");
+    MakeTemplateVarInt("player", "id", 3720);
+    MakeTemplateVarFloat("player", "pos_x", 5.5);
+    new Template:t = CreateTemplate("Name: {{ player.name }}, ID: {{ player.id }}, Pos X: {{ player.pos_x }}");
     new rendered[64];
-    new ret = RenderTemplate(t, rendered, sizeof rendered,
-        PAIR_STR("string", "Southclaws"),
-        PAIR_INT("int", 50)
-    );
+    new ret = RenderTemplate(t, rendered, sizeof rendered);
 
     printf("ret: %d rendered: '%s'", ret, rendered);
     ASSERT(ret == 0);
-    ASSERT(strcmp(rendered, "String: Southclaws, Int: 50, Float: 70.5") == 0);
+    ASSERT(strcmp(rendered, "Name: Southclaws, ID: 3720, Pos X: 5.5") == 0);    
 }

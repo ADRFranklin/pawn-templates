@@ -5,14 +5,16 @@ extern crate log;
 mod plugin;
 
 use std::collections::HashMap;
-use crate::plugin::Templates;
+use crate::plugin::*;
 use samp::initialize_plugin;
 
 initialize_plugin!(
     natives: [
         Templates::create_template,
         Templates::render_template,
-        Templates::create_template_var,
+        Templates::make_template_var_int,
+        Templates::make_template_var_float,
+        Templates::make_template_var_string,
     ],
     {
         let samp_logger = samp::plugin::logger()
@@ -30,7 +32,7 @@ initialize_plugin!(
         Templates {
             pool: HashMap::new(),
             id: 0,
-            variables: liquid::value::Object::new()
+            globals: liquid::value::Object::new()
         }
     }
 );
