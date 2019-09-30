@@ -22,8 +22,8 @@ enum ArgumentPairType {
     Float = 3,
 }
 
-impl ArgumentPairType {
-    fn from_i32(i: i32) -> ArgumentPairType {
+impl From<i32> for ArgumentPairType {
+    fn from(i: i32) -> ArgumentPairType {
         match i {
             1 => ArgumentPairType::String,
             2 => ArgumentPairType::Int,
@@ -56,14 +56,34 @@ impl Templates {
             return Ok(1);
         };
 
-        let template_id = params.next::<i32>().unwrap();
+        let template_id = match params.next::<i32>() {
+            None => {
+                error!("invalid template id");
+                return Ok(1);
+            },
+            Some(v) => v,
+        };
+
         let t = match self.pool.get(&template_id) {
             Some(t) => t,
             None => return Ok(2),
         };
 
-        let output_str = params.next::<UnsizedBuffer>().unwrap();
-        let output_len = params.next::<usize>().unwrap();
+        let output_str = match params.next::<UnsizedBuffer>() {
+            None => {
+                error!("invalid buffer");
+                return Ok(1);
+            },
+            Some(v) => v,
+        };
+
+        let output_len = match params.next::<usize>() {
+            None => {
+                error!("invalid output len");
+                return Ok(1);
+            },
+            Some(v) => v,
+        };
 
         let mut variables = self.globals.clone();
 
@@ -84,7 +104,7 @@ impl Templates {
                 Some(k) => k.to_string(),
             };
 
-            match ArgumentPairType::from_i32(*var_type) {
+            match ArgumentPairType::from(*var_type) {
                 ArgumentPairType::String => {
                     let value = params.next::<AmxString>().unwrap().to_string();
                     variables.insert(key.into(), liquid::value::Value::scalar(value));
