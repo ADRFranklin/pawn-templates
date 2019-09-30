@@ -1,1 +1,1 @@
-Name: {{ player.name }}, ID: {{ player.id }}, Pos X: {{ player.pos_x }}
+Name: {{ system.name }}, ID: {{ system.id }}, Pos X: {{ system.coord_x }}

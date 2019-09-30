@@ -98,14 +98,14 @@ Test:GlobalVariables() {
 }
 
 Test:LoadFromFile() {
-    MakeTemplateVarString("player", "name", "Southclaws");
-    MakeTemplateVarInt("player", "id", 3720);
-    MakeTemplateVarFloat("player", "pos_x", 5.5);    
+    MakeTemplateVarString("system", "name", "Machine");
+    MakeTemplateVarInt("system", "id", 7780);
+    MakeTemplateVarFloat("system", "coord_x", 9.5);    
     new Template:t = LoadTemplateFromFile("scriptfiles/file.txt");
     new rendered[64];
     new ret = RenderTemplate(t, rendered, sizeof rendered);    
 
     printf("ret: %d rendered: '%s'", ret, rendered);
     ASSERT(ret == 0);
-    ASSERT(strcmp(rendered, "Name: Southclaws, ID: 3720, Pos X: 5.5") == 0);    
+    ASSERT(strcmp(rendered, "Name: Machine, ID: 7780, Pos X: 9.5") == 0);    
 }
