@@ -24,3 +24,4 @@ native RenderTemplate(Template:id, dest[], len, ...);
 native MakeTemplateVarInt(const namespace[], const key[], value);
 native MakeTemplateVarFloat(const namespace[], const key[], Float:value);
 native MakeTemplateVarString(const namespace[], const key[], const value[]);
+native Template:LoadTemplateFromFile(const path[]);

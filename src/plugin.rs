@@ -4,6 +4,9 @@ use log::error;
 use samp::native;
 use samp::prelude::*;
 use std::collections::HashMap;
+use std::error::Error;
+use std::fs::File;
+use std::io::Read;
 
 pub struct Templates {
     pub pool: HashMap<i32, liquid::Template>,
@@ -33,18 +36,14 @@ impl ArgumentPairType {
 impl Templates {
     #[native(name = "CreateTemplate")]
     pub fn create_template(&mut self, _: &Amx, template: AmxString) -> AmxResult<i32> {
-        let parser = liquid::ParserBuilder::with_liquid().build().unwrap();
-
-        let t = match parser.parse(&template.to_string()) {
+        let ret = match self.make_template(template.to_string()) {
             Ok(v) => v,
-            Err(e) => {
-                error!("{}", e);
+            Err(_) => {
                 return Ok(1);
             }
         };
 
-        let id = self.alloc(t);
-        return Ok(id);
+        Ok(ret)
     }
 
     #[native(raw, name = "RenderTemplate")]
@@ -96,7 +95,7 @@ impl Templates {
                 }
                 ArgumentPairType::Float => {
                     let value = params.next::<Ref<f32>>().unwrap();
-                    variables.insert(key.into(), liquid::value::Value::scalar(*value as f64));
+                    variables.insert(key.into(), liquid::value::Value::scalar(f64::from(*value)));
                 }
                 _ => return Ok(3),
             }
@@ -113,7 +112,7 @@ impl Templates {
         let mut dest = output_str.into_sized_buffer(output_len);
         let _ = samp::cell::string::put_in_buffer(&mut dest, &output);
 
-        return Ok(0);
+        Ok(0)
     }
 
     #[native(name = "MakeTemplateVarInt")]
@@ -141,7 +140,7 @@ impl Templates {
         self.globals
             .insert(namespace_str.into(), Value::Object(variable));
 
-        return Ok(0);
+        Ok(0)
     }
 
     #[native(name = "MakeTemplateVarFloat")]
@@ -165,11 +164,11 @@ impl Templates {
         }
 
         let mut variable: Object = self.get_global_variables(&namespace_str);
-        variable.insert(key_str.into(), Value::scalar(value as f64));
+        variable.insert(key_str.into(), Value::scalar(f64::from(value)));
         self.globals
             .insert(namespace_str.into(), Value::Object(variable));
 
-        return Ok(0);
+        Ok(0)
     }
 
     #[native(name = "MakeTemplateVarString")]
@@ -197,7 +196,43 @@ impl Templates {
         self.globals
             .insert(namespace_str.into(), Value::Object(variable));
 
-        return Ok(0);
+        Ok(0)
+    }
+
+    #[native(name = "LoadTemplateFromFile")]
+    pub fn load_template_from_file(&mut self, _: &Amx, path: AmxString) -> AmxResult<i32> {
+        let path_str = path.to_string();
+        if path_str.is_empty() {
+            error!("path expected a string, none given.");
+            return Ok(1);
+        }
+        let current_path = &path_str;
+        let mut file = match File::open(current_path) {
+            Ok(file) => file,
+            Err(_) => {
+                error!(
+                    "the file could not be found at the path: {}",
+                    path_str.clone()
+                );
+                return Ok(1);
+            }
+        };
+
+        let mut file_contents = String::new();
+        match file.read_to_string(&mut file_contents) {
+            Err(e) => {
+                error!("{}", e);
+                return Ok(1);
+            }
+            Ok(v) => v,
+        };
+
+        let ret = match self.make_template(file_contents) {
+            Ok(v) => v,
+            Err(_) => return Ok(1),
+        };
+
+        Ok(ret)
     }
 
     fn alloc(&mut self, template: liquid::Template) -> i32 {
@@ -206,16 +241,31 @@ impl Templates {
         self.id
     }
 
-    fn get_global_variables(&mut self, namespace: &String) -> Object {
+    fn get_global_variables(&mut self, namespace: &str) -> Object {
         let mut object = Object::new();
         for (key, value) in self.globals.iter() {
-            if key.to_string() == *namespace {
+            if key == namespace {
                 object = value.as_object().unwrap().clone();
                 break;
             }
         }
 
         object
+    }
+
+    fn make_template(&mut self, template: String) -> Result<i32, Box<dyn Error>> {
+        let parser = liquid::ParserBuilder::with_liquid().build().unwrap();
+
+        let t = match parser.parse(&template) {
+            Ok(v) => v,
+            Err(e) => {
+                error!("{}", e);
+                return Ok(1);
+            }
+        };
+
+        let id = self.alloc(t);
+        Ok(id)
     }
 }
 

@@ -96,3 +96,16 @@ Test:GlobalVariables() {
     ASSERT(ret == 0);
     ASSERT(strcmp(rendered, "Name: Southclaws, ID: 3720, Pos X: 5.5") == 0);    
 }
+
+Test:LoadFromFile() {
+    MakeTemplateVarString("player", "name", "Southclaws");
+    MakeTemplateVarInt("player", "id", 3720);
+    MakeTemplateVarFloat("player", "pos_x", 5.5);    
+    new Template:t = LoadTemplateFromFile("scriptfiles/file.txt");
+    new rendered[64];
+    new ret = RenderTemplate(t, rendered, sizeof rendered);    
+
+    printf("ret: %d rendered: '%s'", ret, rendered);
+    ASSERT(ret == 0);
+    ASSERT(strcmp(rendered, "Name: Southclaws, ID: 3720, Pos X: 5.5") == 0);    
+}

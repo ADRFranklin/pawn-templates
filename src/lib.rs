@@ -1,12 +1,12 @@
-extern crate samp;
 extern crate liquid;
 extern crate log;
+extern crate samp;
 
 mod plugin;
 
-use std::collections::HashMap;
 use crate::plugin::*;
 use samp::initialize_plugin;
+use std::collections::HashMap;
 
 initialize_plugin!(
     natives: [
@@ -15,6 +15,7 @@ initialize_plugin!(
         Templates::make_template_var_int,
         Templates::make_template_var_float,
         Templates::make_template_var_string,
+        Templates::load_template_from_file,
     ],
     {
         let samp_logger = samp::plugin::logger()
