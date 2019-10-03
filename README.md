@@ -1,54 +1,70 @@
-# Template Engine for Pawn
+# pawn-template
 
-## Basic Use
-```c
-TemplateBanned = CreateTemplate(
-"Your account {{name}} has been banned!\
+[![sampctl](https://shields.southcla.ws/badge/sampctl-pawn--templates-2f2f2f.svg?style=for-the-badge)](https://github.com/ADRFranklin/pawn-templates)
 
-Reason: {{reason}}\
-Duration: {{duration}}\
-If you disagree, please file an appeal at: {{forum}}\
-");
+## Description
 
-// ...
+Creates customizable templates, that can be rendered with custom variables.
 
-new dest[1024];
-RenderTemplate(TemplateBanned, dest,
-    PAIR_STR("name", playerName),
-    PAIR_STR("reason", reason),
-    PAIR_INT("duration", time()),
-    PAIR_STR("forum", "https://forum.website.com")
-);
+## Installation
+
+Simply install to your project:
+
+```bash
+sampctl package install adrfranklin/pawn-templates
 ```
 
-## Full Usage
+Include in your code and begin using the library:
+
+```pawn
+#include <templates>
+```
+
+## Usage
+
 ```c
-static Template:JoinTemplate;
+static Template:ban_template;
 
 main() {
-    CreateTemplateVar(
-        PAIR_STR("primary", "{007BFF}"),
-        PAIR_STR("white", "{FFFFFF}"),
-        PAIR_STR("server_name", "My Server")
-    );
-
-    JoinTemplate = CreateTemplate("\
-        Welcome {primary}{user}{white}, {primary}{server_name}{white}"
-    );    
+    SetTemplateGlobalVarString("server", "name", "Example");
 }
 
-public OnPlayerConnect(playerid)
+static RenderBanTemplate(playerid, const reason[])
 {
     new name[MAX_PLAYER_NAME + 1];
     GetPlayerName(playerid, name, sizeof name);
 
-    new dest[1024];
-    RenderTemplate(JoinTemplate, dest, sizeof dest, 
-        PAIR_STR("user", name)
+    ban_template = CreateTemplate(
+        "You have currently been banned from {{ server.name }}. \
+        \
+        Name: {{ name | capitalize }} \
+        Date: {{ date | date: "%Y %h" }} \
+        Admin {{ admin_name | capitalize }} \
+        Reason: {{ reason }}"
     );
 
-    SendClientMessage(playerid, 0xFFFFFF, dest);
+    SetTemplateVarString(ban_template, "name", "Michael");
+    SetTemplateVarInt(ban_template, "date", gettime());
+    SetTemplateVarString(ban_template, "admin_name", "Southclaws");
+    SetTemplateVarString(ban_template, "reason", reason);
 
-    return 1;
+    new output[1024];
+    RenderTemplate(ban_template, output, sizeof output);
 }
+```
+
+You can find more about the general syntax here: [link](https://github.com/Shopify/liquid/wiki/Liquid-for-Designers)
+
+## Testing
+
+To test, simply run the package:
+
+```bash
+make test-native
+```
+
+or
+
+```bash
+task test-native
 ```
