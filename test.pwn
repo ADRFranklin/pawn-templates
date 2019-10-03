@@ -11,9 +11,9 @@ main() {
 }
 
 Test:Simple() {
-    new Template:t = CreateTemplate("Hello, {{ name }}! Today is {{ date }}");
+    new Template:t = Template_Create("Hello, {{ name }}! Today is {{ date }}");
     new rendered[64];
-    new ret = RenderTemplate(t, rendered, sizeof rendered,
+    new ret = Template_Render(t, rendered, sizeof rendered,
         PAIR_STR("name", "Southclaws"),
         PAIR_STR("date", "Monday")
     );
@@ -24,9 +24,9 @@ Test:Simple() {
 }
 
 Test:Types() {
-    new Template:t = CreateTemplate("String: {{ string }} Int: {{ int }} Float: {{ float }}");
+    new Template:t = Template_Create("String: {{ string }} Int: {{ int }} Float: {{ float }}");
     new rendered[64];
-    new ret = RenderTemplate(t, rendered, sizeof rendered,
+    new ret = Template_Render(t, rendered, sizeof rendered,
         PAIR_STR("string", "hello"),
         PAIR_INT("int", 42),
         PAIR_FLOAT("float", 5.5)
@@ -38,9 +38,9 @@ Test:Types() {
 }
 
 Test:Conditionals() {
-    new Template:t = CreateTemplate("Hello {% if name %}{{ name }}{% else %}Anonymous{% endif %}.");
+    new Template:t = Template_Create("Hello {% if name %}{{ name }}{% else %}Anonymous{% endif %}.");
     new rendered[64];
-    new ret = RenderTemplate(t, rendered, sizeof rendered,
+    new ret = Template_Render(t, rendered, sizeof rendered,
         PAIR_STR("name", "Southclaws")
     );
 
@@ -49,7 +49,7 @@ Test:Conditionals() {
     ASSERT(strcmp(rendered, "Hello Southclaws.") == 0);
 
     // no variables passed here
-    ret = RenderTemplate(t, rendered, sizeof rendered);
+    ret = Template_Render(t, rendered, sizeof rendered);
 
     printf("ret: %d rendered: '%s'", ret, rendered);
     ASSERT(ret == 0);
@@ -57,9 +57,9 @@ Test:Conditionals() {
 }
 
 Test:Filters() {
-    new Template:t = CreateTemplate("{{ name | upcase }}");
+    new Template:t = Template_Create("{{ name | upcase }}");
     new rendered[64];
-    new ret = RenderTemplate(t, rendered, sizeof rendered,
+    new ret = Template_Render(t, rendered, sizeof rendered,
         PAIR_STR("name", "Southclaws")
     );
 
@@ -69,13 +69,13 @@ Test:Filters() {
 }
 
 Test:Assignment() {
-    new Template:t = CreateTemplate("\
+    new Template:t = Template_Create("\
     {% assign fruits = \"apples, oranges, peaches\" %}\
     {% if fruits %}\
     {{ fruits }}\
     {% endif %}");
     new rendered[64];
-    new ret = RenderTemplate(t, rendered, sizeof rendered,
+    new ret = Template_Render(t, rendered, sizeof rendered,
         PAIR_STR("name", "Southclaws")
     );
 
@@ -85,12 +85,12 @@ Test:Assignment() {
 }
 
 Test:GlobalVariables() {
-    SetTemplateGlobalVarString("player", "name", "Southclaws");
-    SetTemplateGlobalVarInt("player", "id", 3720);
-    SetTemplateGlobalVarFloat("player", "pos_x", 5.5);
-    new Template:t = CreateTemplate("Name: {{ player.name }}, ID: {{ player.id }}, Pos X: {{ player.pos_x }}");
+    Template_SetGlobalString("player", "name", "Southclaws");
+    Template_SetGlobalInt("player", "id", 3720);
+    Template_SetGlobalFloat("player", "pos_x", 5.5);
+    new Template:t = Template_Create("Name: {{ player.name }}, ID: {{ player.id }}, Pos X: {{ player.pos_x }}");
     new rendered[64];
-    new ret = RenderTemplate(t, rendered, sizeof rendered);
+    new ret = Template_Render(t, rendered, sizeof rendered);
 
     printf("ret: %d rendered: '%s'", ret, rendered);
     ASSERT(ret == 0);
@@ -98,13 +98,13 @@ Test:GlobalVariables() {
 }
 
 Test:TemplateVariabes() {
-    new Template:t = CreateTemplate("Location: {{ location }}, Geo Id: {{ geoid }}, Lat: {{ lat }}");
-    SetTemplateVarString(t, "location", "England");
-    SetTemplateVarInt(t, "geoid", 37);
-    SetTemplateVarFloat(t, "lat", 9893.2);
+    new Template:t = Template_Create("Location: {{ location }}, Geo Id: {{ geoid }}, Lat: {{ lat }}");
+    Template_SetString(t, "location", "England");
+    Template_SetInt(t, "geoid", 37);
+    Template_SetFloat(t, "lat", 9893.2);
 
     new rendered[64];
-    new ret = RenderTemplate(t, rendered, sizeof rendered);    
+    new ret = Template_Render(t, rendered, sizeof rendered);    
 
     printf("ret: %d rendered: '%s'", ret, rendered);
     ASSERT(ret == 0);
@@ -112,12 +112,12 @@ Test:TemplateVariabes() {
 }
 
 Test:LoadFromFile() {
-    SetTemplateGlobalVarString("system", "name", "Machine");
-    SetTemplateGlobalVarInt("system", "id", 7780);
-    SetTemplateGlobalVarFloat("system", "coord_x", 9.5);    
-    new Template:t = LoadTemplateFromFile("scriptfiles/file.txt");
+    Template_SetGlobalString("system", "name", "Machine");
+    Template_SetGlobalInt("system", "id", 7780);
+    Template_SetGlobalFloat("system", "coord_x", 9.5);    
+    new Template:t = Template_LoadFromFile("scriptfiles/file.txt");
     new rendered[64];
-    new ret = RenderTemplate(t, rendered, sizeof rendered);    
+    new ret = Template_Render(t, rendered, sizeof rendered);    
 
     printf("ret: %d rendered: '%s'", ret, rendered);
     ASSERT(ret == 0);

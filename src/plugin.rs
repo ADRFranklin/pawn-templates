@@ -56,7 +56,7 @@ impl From<i32> for ArgumentPairType {
 }
 
 impl Templates {
-    #[native(name = "CreateTemplate")]
+    #[native(name = "Template_Create")]
     pub fn create_template(&mut self, _: &Amx, template: AmxString) -> AmxResult<ReturnType> {
         let ret = match self.make_template(template.to_string()) {
             Ok(v) => v,
@@ -68,7 +68,7 @@ impl Templates {
         Ok(ReturnType::Value(ret))
     }
 
-    #[native(name = "LoadTemplateFromFile")]
+    #[native(name = "Template_LoadFromFile")]
     pub fn load_template_from_file(&mut self, _: &Amx, path: AmxString) -> AmxResult<ReturnType> {
         let path_str = path.to_string();
         if path_str.is_empty() {
@@ -104,7 +104,7 @@ impl Templates {
         Ok(ReturnType::Value(ret))
     }
 
-    #[native(name = "SetTemplateGlobalVarInt")]
+    #[native(name = "Template_SetGlobalInt")]
     pub fn set_template_global_var_int(
         &mut self,
         _: &Amx,
@@ -132,7 +132,7 @@ impl Templates {
         Ok(ReturnType::Success)
     }
 
-    #[native(name = "SetTemplateGlobalVarFloat")]
+    #[native(name = "Template_SetGlobalFloat")]
     pub fn set_template_global_var_float(
         &mut self,
         _: &Amx,
@@ -160,7 +160,7 @@ impl Templates {
         Ok(ReturnType::Success)
     }
 
-    #[native(name = "SetTemplateGlobalVarString")]
+    #[native(name = "Template_SetGlobalString")]
     pub fn set_template_global_var_string(
         &mut self,
         _: &Amx,
@@ -188,7 +188,7 @@ impl Templates {
         Ok(ReturnType::Success)
     }
 
-    #[native(name = "SetTemplateVarInt")]
+    #[native(name = "Template_SetInt")]
     pub fn set_template_var_int(
         &mut self,
         _: &Amx,
@@ -215,7 +215,7 @@ impl Templates {
         Ok(ReturnType::Success)
     }
 
-    #[native(name = "SetTemplateVarFloat")]
+    #[native(name = "Template_SetFloat")]
     pub fn set_template_var_float(
         &mut self,
         _: &Amx,
@@ -244,7 +244,7 @@ impl Templates {
         Ok(ReturnType::Success)
     }
 
-    #[native(name = "SetTemplateVarString")]
+    #[native(name = "Template_SetString")]
     pub fn set_template_var_string(
         &mut self,
         _: &Amx,
@@ -273,7 +273,7 @@ impl Templates {
         Ok(ReturnType::Success)
     }
 
-    #[native(raw, name = "RenderTemplate")]
+    #[native(raw, name = "Template_Render")]
     pub fn render_template(
         &mut self,
         _: &Amx,

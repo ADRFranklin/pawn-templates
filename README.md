@@ -26,7 +26,7 @@ Include in your code and begin using the library:
 static Template:ban_template;
 
 main() {
-    SetTemplateGlobalVarString("server", "name", "Example");
+    Template_SetGlobalString("server", "name", "Example");
 }
 
 static RenderBanTemplate(playerid, const reason[])
@@ -34,7 +34,7 @@ static RenderBanTemplate(playerid, const reason[])
     new name[MAX_PLAYER_NAME + 1];
     GetPlayerName(playerid, name, sizeof name);
 
-    ban_template = CreateTemplate(
+    ban_template = Template_Create(
         "You have currently been banned from {{ server.name }}. \
         \
         Name: {{ name | capitalize }} \
@@ -43,13 +43,13 @@ static RenderBanTemplate(playerid, const reason[])
         Reason: {{ reason }}"
     );
 
-    SetTemplateVarString(ban_template, "name", name);
-    SetTemplateVarInt(ban_template, "date", gettime());
-    SetTemplateVarString(ban_template, "admin_name", "Southclaws");
-    SetTemplateVarString(ban_template, "reason", reason);
+    Template_SetString(ban_template, "name", name);
+    Template_SetInt(ban_template, "date", gettime());
+    Template_SetString(ban_template, "admin_name", "Southclaws");
+    Template_SetString(ban_template, "reason", reason);
 
     new output[1024];
-    RenderTemplate(ban_template, output, sizeof output);
+    Template_Render(ban_template, output, sizeof output);
 }
 ```
 
