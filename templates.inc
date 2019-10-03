@@ -20,8 +20,11 @@ enum {
 #define PAIR_FLOAT(%0,%1) TYPE_FLOAT, %0, _:%1
 
 native Template:CreateTemplate(const template[]);
-native RenderTemplate(Template:id, dest[], len, ...);
-native MakeTemplateVarInt(const namespace[], const key[], value);
-native MakeTemplateVarFloat(const namespace[], const key[], Float:value);
-native MakeTemplateVarString(const namespace[], const key[], const value[]);
 native Template:LoadTemplateFromFile(const path[]);
+native SetTemplateGlobalVarInt(const namespace[], const key[], value);
+native SetTemplateGlobalVarFloat(const namespace[], const key[], Float:value);
+native SetTemplateGlobalVarString(const namespace[], const key[], const value[]);
+native SetTemplateVarInt(Template:id, const key[], value);
+native SetTemplateVarFloat(Template:id, const key[], Float:value);
+native SetTemplateVarString(Template:id, const key[], const value[]);
+native RenderTemplate(Template:id, dest[], len = sizeof (dest), ...);

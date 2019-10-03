@@ -85,9 +85,9 @@ Test:Assignment() {
 }
 
 Test:GlobalVariables() {
-    MakeTemplateVarString("player", "name", "Southclaws");
-    MakeTemplateVarInt("player", "id", 3720);
-    MakeTemplateVarFloat("player", "pos_x", 5.5);
+    SetTemplateGlobalVarString("player", "name", "Southclaws");
+    SetTemplateGlobalVarInt("player", "id", 3720);
+    SetTemplateGlobalVarFloat("player", "pos_x", 5.5);
     new Template:t = CreateTemplate("Name: {{ player.name }}, ID: {{ player.id }}, Pos X: {{ player.pos_x }}");
     new rendered[64];
     new ret = RenderTemplate(t, rendered, sizeof rendered);
@@ -97,10 +97,24 @@ Test:GlobalVariables() {
     ASSERT(strcmp(rendered, "Name: Southclaws, ID: 3720, Pos X: 5.5") == 0);    
 }
 
+Test:TemplateVariabes() {
+    new Template:t = CreateTemplate("Location: {{ location }}, Geo Id: {{ geoid }}, Lat: {{ lat }}");
+    SetTemplateVarString(t, "location", "England");
+    SetTemplateVarInt(t, "geoid", 37);
+    SetTemplateVarFloat(t, "lat", 9893.2);
+
+    new rendered[64];
+    new ret = RenderTemplate(t, rendered, sizeof rendered);    
+
+    printf("ret: %d rendered: '%s'", ret, rendered);
+    ASSERT(ret == 0);
+    ASSERT(strcmp(rendered, "Location: England, Geo Id: 37, Lat: 9893.2001953125") == 0);      
+}
+
 Test:LoadFromFile() {
-    MakeTemplateVarString("system", "name", "Machine");
-    MakeTemplateVarInt("system", "id", 7780);
-    MakeTemplateVarFloat("system", "coord_x", 9.5);    
+    SetTemplateGlobalVarString("system", "name", "Machine");
+    SetTemplateGlobalVarInt("system", "id", 7780);
+    SetTemplateGlobalVarFloat("system", "coord_x", 9.5);    
     new Template:t = LoadTemplateFromFile("scriptfiles/file.txt");
     new rendered[64];
     new ret = RenderTemplate(t, rendered, sizeof rendered);    

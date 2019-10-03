@@ -11,11 +11,14 @@ use std::collections::HashMap;
 initialize_plugin!(
     natives: [
         Templates::create_template,
-        Templates::render_template,
-        Templates::make_template_var_int,
-        Templates::make_template_var_float,
-        Templates::make_template_var_string,
         Templates::load_template_from_file,
+        Templates::set_template_global_var_int,
+        Templates::set_template_global_var_float,
+        Templates::set_template_global_var_string,
+        Templates::set_template_var_int,
+        Templates::set_template_var_float,
+        Templates::set_template_var_string,
+        Templates::render_template,
     ],
     {
         let samp_logger = samp::plugin::logger()
@@ -33,7 +36,7 @@ initialize_plugin!(
         Templates {
             pool: HashMap::new(),
             id: 0,
-            globals: liquid::value::Object::new()
+            global_vars: liquid::value::Object::new()
         }
     }
 );
