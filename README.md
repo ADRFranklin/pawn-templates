@@ -1,4 +1,4 @@
-# pawn-template
+# pawn-templates
 
 [![sampctl](https://shields.southcla.ws/badge/sampctl-pawn--templates-2f2f2f.svg?style=for-the-badge)](https://github.com/ADRFranklin/pawn-templates)
 
@@ -43,7 +43,7 @@ static RenderBanTemplate(playerid, const reason[])
         Reason: {{ reason }}"
     );
 
-    SetTemplateVarString(ban_template, "name", "Michael");
+    SetTemplateVarString(ban_template, "name", name);
     SetTemplateVarInt(ban_template, "date", gettime());
     SetTemplateVarString(ban_template, "admin_name", "Southclaws");
     SetTemplateVarString(ban_template, "reason", reason);
